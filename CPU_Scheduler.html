@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<!--
+
+CPU Scheduler Simulator
+
+Name: David Pirraglia
+
+Professor: Sister Jane Fritz
+
+Class: COM 310
+
+-->
+<html>
+	<head>
+		<!--Include jQuery library-->
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+
+		<!--Include jQuery UI library and style sheet theme-->
+		<!--<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">-->
+		<link rel="stylesheet" href="http://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+		<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+
+		<!--Include mouse wheel functions for jQuery-->
+		<script src="https://jqueryui.com/resources/demos/external/jquery-mousewheel/jquery.mousewheel.js"></script>
+
+		<style>
+
+			/*Center the titile of the page*/
+			#title {
+				text-align: center;
+			}
+
+			/*Styles for the user input*/
+
+			#div-input {
+				display: table;
+				border: 1px solid #c5c5c5;
+				border-radius: 3px;
+				border-collapse: collapse;
+			}
+
+			#div-head, .div-body {
+				display: table-row;
+			}
+
+			#div-head div {
+				font-weight: bold;
+			}
+
+			#div-head div, .div-body div {
+				display: table-cell;
+				border: 1px solid #c5c5c5;
+				text-align: left;
+				padding: 8px;
+			}
+
+			/*Hide the Priority Column*/
+			#div-input .priority {
+				display: none;
+			}
+
+			table {
+				border: 1px solid #c5c5c5;
+				border-radius: 3px;
+				border-collapse: collapse;
+			}
+
+			td, th {
+				border: 1px solid #c5c5c5;
+				text-align: left;
+				padding: 8px;
+			}
+
+			/*Controls the style for subscripts used for P*/
+			.sub {
+				vertical-align: sub;
+				font-size: xx-small;
+			}
+
+			.p {
+				margin-top: 5px;
+				vertical-align: middle;
+				text-align: center;
+			}
+
+			.lower {
+				margin-top: 9px;
+				margin-left: -5px;
+/*				margin-left: -0.5em;*/
+			}
+
+			/*Fixes the zero on the bottom left corner of the Gantt Chart*/
+			#gantt > div:nth-child(1) > div.lower {
+				margin-left: -2.5px;
+/*				margin-left: -0.25em;*/
+/*				color: red;*/
+			}
+
+			/*Styles for the Gantt Chart*/
+
+			#gantt {
+				border: solid #c5c5c5 1px;
+				border-radius: 3px;
+				background-color: #f6f6f6;
+				height: 30px;
+				display: block;
+				position: absolute;
+				left: 0%;
+				width: calc(95% - 2px);
+				margin-left: 2.5%; /*Center the chart*/
+			}
+
+			.gantt-cell {
+				border-left: solid #c5c5c5 1px;
+				display: inline-block;
+				position: absolute;
+				height: inherit;
+			}
+
+			.gantt-cell:first-child {
+				border-left: none;
+			}
+
+			#quantum {
+				display: none;
+			}
+
+		</style>
+		<script>
+			// Global Variables
+			var processObject;
+			var selectedAlgorithm;
+			var numOfRows = 1;
+			var quantumVisible = false;
+			var priorityVisible = false;
+
+			// Not used
+			var interface = {
+				processArray: [
+					{p:1, ms: 24},
+					{p:2, ms: 3},
+					{p:3, ms: 3}
+				],
+
+				getTotalTime: function() {
+					var total = 0
+					for(element in this.processArray) {
+						total += this.processArray[element]['ms']
+					}
+					return total
+				}
+			};
+
+////////////////////////////////////////////////////////////////////////////////
+
+			// This function executes once the page finishes loading
+			$(function() {
+				processObject = [{p:1, ms: 24},
+								 {p:2, ms: 3},
+								 {p:3, ms: 3}];
+//				processObject = [{p:2,ms:1},{p:1,ms:1}]
+				generateGantt(processObject)
+
+				quantumSpinner = $("#quantumSpinner").spinner()
+
+				// jQuery UI for the spinner
+				processSpinner = $("#processSpinner").spinner({
+					// Prevent spinner from being less than 1
+					spin: function(event, ui) {
+						if (ui.value < 1) {
+							$(this).spinner("value", 1);
+							return false;
+						}
+						generateInput(ui.value);
+					}
+				});
+				// Manual input for the spinner
+				processSpinner.on('keyup', function(e) {
+					var input = processSpinner.spinner('value');
+					if (input < 1) { // Error with typed input
+						processSpinner.parent().css('border-color', 'red');
+						return;
+					}
+					processSpinner.parent().css({'border-color': '#c5c5c5'});
+					generateInput(input);
+				});
+				// Set initial value for the spinner
+				processSpinner.spinner('value', 1);
+
+				function onProcessSpinnerChange(input) {
+					processSpinner.parent().css({'border-color': '#c5c5c5'});
+					generateInput(input);
+				}
+
+////////////////////////////////////////////////////////////////////////////////
+
+				// jQuery UI for the algorithm combo box
+				var algorithmComboBox = $("#algorithm").selectmenu({
+					change: function(event, data) {
+						selectedAlgorithm = data.item.index;
+						onAlgorithmComboBoxChange();
+					}
+				});
+				// Allow the combo box to be changed by scrolling up and down
+				algorithmComboBox.next().on('mousewheel', function(event) {
+					selectedAlgorithm = algorithmComboBox[0].selectedIndex
+
+					if (event.deltaY < 0 && selectedAlgorithm < 3) { // Scroll down
+						algorithmComboBox[0].selectedIndex += 1
+						selectedAlgorithm += 1
+						algorithmComboBox.selectmenu('refresh')
+					} else if (event.deltaY > 0 && selectedAlgorithm > 0) { // Scroll Up
+						algorithmComboBox[0].selectedIndex -= 1
+						selectedAlgorithm -= 1
+						algorithmComboBox.selectmenu('refresh')
+					}
+
+					onAlgorithmComboBoxChange();
+					// Used for debugging
+//					$('#title').text(e.deltaY + ' ' + $('#algorithm')[0].selectedIndex)
+				});
+
+			});
+
+			function onAlgorithmComboBoxChange() {
+				switch(selectedAlgorithm) {
+					case 0: // FCFS
+						if (priorityVisible) {hidePriorityColumn()}
+						if (quantumVisible) {hideQuantumSpinner()}
+						break;
+					case 1: // SJF
+						if (priorityVisible) {hidePriorityColumn()}
+						if (quantumVisible) {hideQuantumSpinner()}
+						break;
+					case 2: // RR
+						if (priorityVisible) {hidePriorityColumn()}
+						if (quantumVisible) {hideQuantumSpinner()}
+						showQuantumSpinner()
+						break;
+					case 3: // PRI
+						if (quantumVisible) {hideQuantumSpinner()}
+						showPriorityColumn();
+						break;
+				}
+			}
+
+			function showQuantumSpinner() {
+				$('#quantum').css({
+					'display': 'inline'
+				});
+				quantumVisible = true;
+			}
+
+			function hideQuantumSpinner() {
+				$('#quantum').css({
+					'display': 'none'
+				});
+				quantumVisible = false;
+			}
+
+			function showPriorityColumn() {
+				$('.priority').css({
+					'display': 'table-cell'
+				});
+				priorityVisible = true;
+			}
+
+			function hidePriorityColumn() {
+				$('.priority').css({
+					'display': 'none'
+				});
+				priorityVisible = false;
+			}
+
+			// Not used currently
+			function generateSubscript(num) {
+				subscript = $('<span></span>').attr({
+					'class': 'sub'
+				});
+				subscript.text(num);
+				return subscript;
+			}
+
+////////////////////////////////////////////////////////////////////////////////
+
+			// Regenerate the Gantt Chart on window resize
+			$(window).resize(function() {
+				generateGantt(processObject)
+			});
+
+////////////////////////////////////////////////////////////////////////////////
+
+			function generateGantt(ganttArray) {
+				// Clear any previous data
+				document.getElementById('gantt').innerHTML = ''
+
+				// Declare variables
+				var i, block, leftShift = 0, percent,
+					width = $('#gantt').width(),
+					len = ganttArray.length,
+					totalTime = getTotalTime(ganttArray),
+					lowerNumber = 0
+
+				// Loop through each process
+				for (i = 0; i < len; i++) {
+					percent = ganttArray[i]['ms'] / totalTime;
+
+					// Create the gantt cell and attributes
+					block = $('<div></div>').attr({
+						'class': "gantt-cell"
+					});
+
+					// Add the text for the cell
+					block.append('<div class="p">P<span class="sub">' +
+								 ganttArray[i]['p'] +
+								 '</span></div><div class="lower">' +
+								 lowerNumber + '</div>');
+
+					// Add the properties for the size of the cell
+					block.css({
+						'left': width * leftShift + 'px',
+						'width': width * percent + 'px'
+					});
+
+					// Add the cell to the page
+					$('#gantt').append(block);
+
+					leftShift += percent;
+					lowerNumber += ganttArray[i]['ms'];
+				}
+
+				// Add last lower right number to the end of the chart
+				block = $('<div>' + lowerNumber + '</div>').css({
+					'position': 'relative',
+					'text-align': 'right',
+					'top': '34px'
+				});
+				$('#gantt').append(block);
+			}
+
+////////////////////////////////////////////////////////////////////////////////
+
+			// Returns the total number of milliseconds
+			function getTotalTime(processObject) {
+				var total = 0
+				for(element in processObject) {
+					total += processObject[element]['ms']
+				}
+				return total
+			}
+
+////////////////////////////////////////////////////////////////////////////////
+
+			function generateInput(updatedNumOfRows) {
+				// Used for debugging
+//				$('#title').text(updatedNumOfRows)
+				console.log(updatedNumOfRows + ' ' + numOfRows)
+				var i;
+
+				if (updatedNumOfRows > numOfRows) { // Add rows
+					for (i = numOfRows; i !== updatedNumOfRows;) {
+						i++;
+						$('#div-input').append('<div class="div-body" id="p' + i +
+							'"><div>P<span class="sub">' + i +
+							'</span></div><div><input class="milliseconds"></div><div>?</div><div>?</div><div class="priority"><input></div></div>')
+					}
+					// Make sure the priority column shows
+					if (priorityVisible) {showPriorityColumn()}
+				} else if (updatedNumOfRows < numOfRows) { // Remove rows
+					for (i = numOfRows; i !== updatedNumOfRows; i--) {
+						$('#div-input').children().last().remove();
+					}
+				}
+
+				numOfRows = updatedNumOfRows;
+
+				/*return;
+				if (updatedNumOfRows === numOfRows + 1) {
+					$('#div-input').append('<div class="div-body"><div>P<span class="sub">' +
+						updatedNumOfRows +
+						'</span></div><div><input></div><div>0</div><div>0</div></div>')
+					console.log('added 1')
+				} else if (updatedNumOfRows === numOfRows - 1) {
+					$('#div-input').children().last().remove();
+					console.log('removed 1')
+				} else {
+					$('.div-body').remove(); // Remove all rows
+
+					// Redraw all the rows
+					var i;
+					for (i = 1; i <= updatedNumOfRows; i++) {
+						$('#div-input').append('<div class="div-body"><div>P<span class="sub">' + i +
+						'</span></div><div><input></div><div>0</div><div>0</div></div>')
+					}
+					console.log('redone')
+				}
+				numOfRows = updatedNumOfRows;*/
+			}
+
+			function getInput() {
+				var array = [], counter = 1;
+				$('.milliseconds').each(function() {
+					array.push({p:counter++, ms:Number(this.value)});
+				});
+				return array;
+			}
+
+		</script>
+	</head>
+	<body>
+		<h2 id="title">CPU Scheduler Simulator</h2>
+
+		<form action="#">
+			<p>
+				<label for="processSpinner">Select the number of processes:</label>
+				<input id="processSpinner">
+			</p>
+			<p>
+				<label for="algorithm">Select a Scheduling Algorithm:</label>
+				<select id="algorithm">
+					<option value="1" selected>FCFS (First Come First Serve)</option>
+					<option value="2">SJF (Shortest Job First)</option>
+					<option value="3">RR (Round Robin)</option>
+					<option value="4">PRI (Priority Algorithm)</option>
+				</select>
+			</p>
+			<p>
+				<span id="quantum">
+					<label for="quantumSpinner">Quantum:</label>
+					<input id="quantumSpinner">
+				</span>
+			</p>
+		</form>
+
+		<!--<table id="input">
+			<thead>
+				<tr>
+					<th>Process</th>
+					<th>Burst</th>
+					<th>Wait Time</th>
+					<th>Turnaround Time</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td>P<span class="sub">1</span></td>
+					<td><input></td>
+					<td>0</td>
+					<td>0</td>
+				</tr>
+			</tbody>
+		</table>
+		<br>-->
+
+		<div id="div-input">
+			<div id="div-head">
+				<div>Process</div>
+				<div>Burst</div>
+				<div>Wait Time</div>
+				<div>Turnaround Time</div>
+				<div class="priority">Priority</div>
+			</div>
+			<div class="div-body">
+				<div>P<span class="sub">1</span></div>
+				<div><input class="milliseconds"></div>
+				<div>?</div>
+				<div>?</div>
+				<div class="priority"><input></div>
+			</div>
+		</div>
+
+		<p>Average Wait Time: <span id="waittime"></span></p>
+		<p>Average Turnaround Time: <span id="turntime"></span></p>
+		<!--<table>
+			<tr>
+				<td>Average wait time: <span id="waittime"></span></td>
+				<td>Average turnaround time: <span id="turntime"></span></td>
+			</tr>
+		</table>-->
+
+		<h2 id="h2">Gantt Chart</h2>
+		<div id="gantt">
+			<!--<div class="gantt-cell" style="left: 0%; width: calc(50% - 1px);">
+				P<span class="sub">1</span>
+			</div>
+			<div class="gantt-cell" style="left: 50%; width: calc(50% - 1px); border-right: none;">
+				P<span class="sub">2</span>
+			</div>-->
+		</div>
+	</body>
+</html>
