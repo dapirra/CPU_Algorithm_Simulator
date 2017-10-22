@@ -16,7 +16,6 @@ Class: COM 310
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
 
 		<!--Include jQuery UI library and style sheet theme-->
-		<!--<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">-->
 		<link rel="stylesheet" href="http://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
 		<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
 
@@ -373,28 +372,6 @@ Class: COM 310
 				}
 
 				numOfRows = updatedNumOfRows;
-
-				/*return;
-				if (updatedNumOfRows === numOfRows + 1) {
-					$('#div-input').append('<div class="div-body"><div>P<span class="sub">' +
-						updatedNumOfRows +
-						'</span></div><div><input></div><div>0</div><div>0</div></div>')
-					console.log('added 1')
-				} else if (updatedNumOfRows === numOfRows - 1) {
-					$('#div-input').children().last().remove();
-					console.log('removed 1')
-				} else {
-					$('.div-body').remove(); // Remove all rows
-
-					// Redraw all the rows
-					var i;
-					for (i = 1; i <= updatedNumOfRows; i++) {
-						$('#div-input').append('<div class="div-body"><div>P<span class="sub">' + i +
-						'</span></div><div><input></div><div>0</div><div>0</div></div>')
-					}
-					console.log('redone')
-				}
-				numOfRows = updatedNumOfRows;*/
 			}
 
 			function getInput() {
@@ -432,26 +409,6 @@ Class: COM 310
 			</p>
 		</form>
 
-		<!--<table id="input">
-			<thead>
-				<tr>
-					<th>Process</th>
-					<th>Burst</th>
-					<th>Wait Time</th>
-					<th>Turnaround Time</th>
-				</tr>
-			</thead>
-			<tbody>
-				<tr>
-					<td>P<span class="sub">1</span></td>
-					<td><input></td>
-					<td>0</td>
-					<td>0</td>
-				</tr>
-			</tbody>
-		</table>
-		<br>-->
-
 		<div id="div-input">
 			<div id="div-head">
 				<div>Process</div>
@@ -471,21 +428,9 @@ Class: COM 310
 
 		<p>Average Wait Time: <span id="waittime"></span></p>
 		<p>Average Turnaround Time: <span id="turntime"></span></p>
-		<!--<table>
-			<tr>
-				<td>Average wait time: <span id="waittime"></span></td>
-				<td>Average turnaround time: <span id="turntime"></span></td>
-			</tr>
-		</table>-->
 
 		<h2 id="h2">Gantt Chart</h2>
 		<div id="gantt">
-			<!--<div class="gantt-cell" style="left: 0%; width: calc(50% - 1px);">
-				P<span class="sub">1</span>
-			</div>
-			<div class="gantt-cell" style="left: 50%; width: calc(50% - 1px); border-right: none;">
-				P<span class="sub">2</span>
-			</div>-->
 		</div>
 	</body>
 </html>
