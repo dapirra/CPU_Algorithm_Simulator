@@ -12,6 +12,8 @@ Class: COM 310
 -->
 <html>
 	<head>
+		<meta charset="utf-8">
+
 		<!--Include jQuery library-->
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
 
@@ -49,6 +51,9 @@ Class: COM 310
 					<input id="quantumSpinner">
 				</span>
 			</p>
+			<p>
+				<button id="randomButton">Use Random Burst Times</button>
+			</p>
 		</form>
 
 		<div id="div-input">
@@ -61,15 +66,15 @@ Class: COM 310
 			</div>
 			<div class="div-body">
 				<div>P<span class="sub">1</span></div>
-				<div><input class="milliseconds"></div>
-				<div>?</div>
-				<div>?</div>
+				<div><input class="milliseconds" value="1"></div>
+				<div class="waittime">?</div>
+				<div class="turntime">?</div>
 				<div class="priority"><input></div>
 			</div>
 		</div>
 
-		<p>Average Wait Time: <span id="waittime"></span></p>
-		<p>Average Turnaround Time: <span id="turntime"></span></p>
+		<p>Average Wait Time: <span id="avgwaittime"></span></p>
+		<p>Average Turnaround Time: <span id="avgturntime"></span></p>
 
 		<h2 id="h2">Gantt Chart</h2>
 		<div id="gantt">
