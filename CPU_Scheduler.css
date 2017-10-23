@@ -3,8 +3,15 @@
 	text-align: center;
 }
 
+/*Hide the Quantum Spinner*/
 #quantum {
 	display: none;
+}
+
+/*Controls the style for subscripts used for P*/
+.sub {
+	vertical-align: sub;
+	font-size: xx-small;
 }
 
 /**************************** Styles for the table ****************************/
@@ -20,6 +27,7 @@
 	display: table-row;
 }
 
+/*Style the head of the table*/
 #div-head div {
 	font-weight: bold;
 }
@@ -34,30 +42,6 @@
 /*Hide the Priority Column*/
 #div-input .priority {
 	display: none;
-}
-
-/*Controls the style for subscripts used for P*/
-.sub {
-	vertical-align: sub;
-	font-size: xx-small;
-}
-
-.p {
-	margin-top: 5px;
-	vertical-align: middle;
-	text-align: center;
-}
-
-.lower {
-	margin-top: 9px;
-	margin-left: -5px;
-/*				margin-left: -0.5em;*/
-}
-
-/*Fixes the zero on the bottom left corner of the Gantt Chart*/
-#gantt > div:nth-child(1) > div.lower {
-	margin-left: -2.5px;
-/*	color: red;*/
 }
 
 /************************* Styles for the Gantt Chart *************************/
@@ -83,4 +67,22 @@
 
 .gantt-cell:first-child {
 	border-left: none;
+}
+
+.gantt-label {
+	margin-top: 5px;
+	vertical-align: middle;
+	text-align: center;
+}
+
+.lower {
+	margin-top: 9px;
+	margin-left: -5px;
+/*	margin-left: -0.5em;*/
+}
+
+/*Fixes the zero on the bottom left corner of the Gantt Chart*/
+#gantt > div:nth-child(1) > div.lower {
+	margin-left: -2.5px;
+/*	color: red;*/
 }
