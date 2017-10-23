@@ -36,18 +36,6 @@
 	display: none;
 }
 
-table {
-	border: 1px solid #c5c5c5;
-	border-radius: 3px;
-	border-collapse: collapse;
-}
-
-td, th {
-	border: 1px solid #c5c5c5;
-	text-align: left;
-	padding: 8px;
-}
-
 /*Controls the style for subscripts used for P*/
 .sub {
 	vertical-align: sub;
