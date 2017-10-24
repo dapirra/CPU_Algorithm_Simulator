@@ -22,6 +22,8 @@ function round(number) {
 	}
 }
 
+// TODO Create a super spinner for all user input values.
+
 ////////////////////////////////////////////////////////////////////////////////
 
 var GUI = {
@@ -30,17 +32,20 @@ var GUI = {
 	quantumVisible: false,
 	priorityVisible: false,
 
-	processArray: [
-		{p: 1, ms: 1, wt: NaN, tt: NaN}
-		/*{p: 1, ms: 24}, {p: 2, ms: 3}, {p: 3, ms: 3}*/
-	]
+	processArray: [{
+		pid: 1,
+		burst: 1,
+		waitTime: undefined,
+		turnTIme: undefined,
+		priority: undefined
+	}]
 };
 
 // Returns the total number of milliseconds
 GUI.getTotalTime = function () {
 	var total = 0, element;
 	for (element in this.processArray) {
-		total += this.processArray[element].ms;
+		total += this.processArray[element].burst;
 	}
 	return total;
 };
@@ -108,7 +113,7 @@ GUI.generateGantt = function () {
 
 	// Loop through each process
 	for (i = 0; i < len; i++) {
-		percent = this.processArray[i].ms / totalTime;
+		percent = this.processArray[i].burst / totalTime;
 
 		// Create the gantt cell and attributes
 		block = $('<div></div>').attr({
@@ -117,7 +122,7 @@ GUI.generateGantt = function () {
 
 		// Add the text for the cell
 		block.append('<div class="gantt-label">P<span class="sub">' +
-					this.processArray[i].p +
+					this.processArray[i].pid +
 					'</span></div><div class="lower">' +
 					lowerNumber + '</div>');
 
@@ -131,7 +136,7 @@ GUI.generateGantt = function () {
 		$('#gantt').append(block);
 
 		leftShift += percent;
-		lowerNumber += this.processArray[i].ms;
+		lowerNumber += this.processArray[i].burst;
 	}
 
 	// Add last lower right number to the end of the chart
@@ -176,14 +181,16 @@ GUI.generateRows = function (updatedNumOfRows) {
 };
 
 GUI.updateProcessArray = function () {
-	var array = []; // Clear process array
-	var counter = 1;
+	var array = [], counter = 1;
 	$('.milliseconds').each(function () {
-		array.push({p:counter++, ms:Number(this.value), wt: NaN, tt: NaN});
+		array.push({
+			pid: counter++,
+			burst: Number(this.value),
+			waitTime: undefined,
+			turnTIme: undefined,
+			priority: GUI.priorityVisible ? $(this).parent().siblings().last().children().first().val() : undefined
+		});
 	});
-	if (this.priorityVisible) {
-		// TODO Do something
-	}
 	this.processArray = array;
 	this.numberOfProcesses = array.length;
 };
@@ -191,14 +198,14 @@ GUI.updateProcessArray = function () {
 GUI.updateTimes = function () {
 	var index = 0, array = this.processArray;
 	$('.waittime').each(function () {
-		$(this).text(array[index].wt);
-//		console.log(array[index].wt)
+		$(this).text(array[index].waitTime);
+//		console.log(array[index].waitTime)
 		index++;
 	});
 	index = 0;
 	$('.turntime').each(function () {
-		$(this).text(array[index].tt);
-//		console.log(array[index].tt)
+		$(this).text(array[index].turnTIme);
+//		console.log(array[index].turnTIme)
 		index++;
 	});
 };
@@ -206,12 +213,12 @@ GUI.updateTimes = function () {
 GUI.calcFCFS = function () {
 	this.updateProcessArray();
 
-	var element, wt = 0, tt = 0;
+	var element, waitTime = 0, turnTIme = 0;
 	for (element in this.processArray) {
-		this.processArray[element].wt = wt;
-		tt += this.processArray[element].ms;
-		this.processArray[element].tt = tt;
-		wt = tt;
+		this.processArray[element].waitTime = waitTime;
+		turnTIme += this.processArray[element].burst;
+		this.processArray[element].turnTIme = turnTIme;
+		waitTime = turnTIme;
 	}
 
 	this.updateTimes();
@@ -224,22 +231,22 @@ GUI.calcSJF = function () {
 
 	// Sort array based on burst time order
 	this.processArray.sort(function (a, b) {
-		return a.ms - b.ms;
+		return a.burst - b.burst;
 	});
 
-	var element, wt = 0, tt = 0;
+	var element, waitTime = 0, turnTIme = 0;
 	for (element in this.processArray) {
-		this.processArray[element].wt = wt;
-		tt += this.processArray[element].ms;
-		this.processArray[element].tt = tt;
-		wt = tt;
+		this.processArray[element].waitTime = waitTime;
+		turnTIme += this.processArray[element].burst;
+		this.processArray[element].turnTIme = turnTIme;
+		waitTime = turnTIme;
 	}
 
 	this.generateGantt();
 
 	// Sort array based on process order
 	this.processArray.sort(function (a, b) {
-		return a.p - b.p;
+		return a.pid - b.pid;
 	});
 
 	this.updateTimes();
@@ -251,19 +258,42 @@ GUI.calcRR = function () {
 }
 
 GUI.calcPRI = function () {
-	// TODO
+	this.updateProcessArray();
+
+	// Sort array based on priority order
+	this.processArray.sort(function (a, b) {
+		return a.priority - b.priority;
+	});
+
+	var element, waitTime = 0, turnTIme = 0;
+	for (element in this.processArray) {
+		this.processArray[element].waitTime = waitTime;
+		turnTIme += this.processArray[element].burst;
+		this.processArray[element].turnTIme = turnTIme;
+		waitTime = turnTIme;
+	}
+
+	this.generateGantt();
+
+	// Sort array based on process order
+	this.processArray.sort(function (a, b) {
+		return a.pid - b.pid;
+	});
+
+	this.updateTimes();
+	this.calcWaitAndTurnTime();
 }
 
 GUI.calcWaitAndTurnTime = function () {
 	var sum = 0, element;
 	for (element in this.processArray) {
-		sum += this.processArray[element].wt
+		sum += this.processArray[element].waitTime
 	}
 	$('#avgwaittime').text(round(sum / this.numberOfProcesses));
 
 	sum = 0;
 	for (element in this.processArray) {
-		sum += this.processArray[element].tt
+		sum += this.processArray[element].turnTIme
 	}
 	$('#avgturntime').text(round(sum / this.numberOfProcesses));
 };
@@ -277,10 +307,10 @@ GUI.updateGUI = function () {
 			this.calcSJF();
 			break;
 		case 2: // RR
-			//
+//			this.calcRR();
 			break;
 		case 3: // PRI
-			//
+			this.calcPRI();
 			break;
 	}
 }
@@ -388,5 +418,5 @@ $(function () {
 
 // Regenerate the Gantt Chart on window resize
 $(window).resize(function() {
-	GUI.generateGantt();
+	GUI.updateGUI();
 });
