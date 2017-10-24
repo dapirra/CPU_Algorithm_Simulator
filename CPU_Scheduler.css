@@ -23,7 +23,7 @@
 	border-collapse: collapse;
 }
 
-#div-head, .div-body {
+#div-head, .div-row {
 	display: table-row;
 }
 
@@ -32,7 +32,7 @@
 	font-weight: bold;
 }
 
-#div-head div, .div-body div {
+#div-head div, .div-row div {
 	display: table-cell;
 	border: 1px solid #c5c5c5;
 	text-align: left;
@@ -42,6 +42,11 @@
 /*Hide the Priority Column*/
 #div-input .priority {
 	display: none;
+}
+
+/*Testing*/
+#div-input .div-row input {
+	padding: 2px;
 }
 
 /************************* Styles for the Gantt Chart *************************/

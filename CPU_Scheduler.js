@@ -95,7 +95,7 @@ GUI.onAlgorithmComboBoxChange = function () {
 	}
 };
 
-GUI.generateGantt = function() {
+GUI.generateGantt = function () {
 	// Clear any previous data
 	document.getElementById('gantt').innerHTML = ''
 
@@ -143,22 +143,23 @@ GUI.generateGantt = function() {
 	$('#gantt').append(block);
 };
 
-GUI.generateInput = function (updatedNumOfRows) {
+GUI.generateRows = function (updatedNumOfRows) {
 	var numOfRows = this.numberOfProcesses, i;
 
-	console.log(updatedNumOfRows + ' ' + numOfRows);
+	// Used for debugging
+//	console.log(updatedNumOfRows + ' ' + numOfRows);
 
 	// Add rows
 	if (updatedNumOfRows > numOfRows) {
 		for (i = numOfRows; i !== updatedNumOfRows;) {
 			i++;
-			$('#div-input').append('<div class="div-body" id="p' + i +
+			$('#div-input').append('<div class="div-row" id="p' + i +
 				'"><div>P<span class="sub">' + i +
 				'</span></div>' +
-				'<div><input class="milliseconds"></div>' +
+				'<div><input class="milliseconds" type="text"></div>' +
 				'<div class="waittime">?</div>' +
 				'<div class="turntime">?</div>' +
-				'<div class="priority"><input></div>' +
+				'<div class="priority"><input type="text"></div>' +
 				'</div>')
 		}
 		// Make sure the priority column shows
@@ -177,9 +178,12 @@ GUI.generateInput = function (updatedNumOfRows) {
 GUI.updateProcessArray = function () {
 	var array = []; // Clear process array
 	var counter = 1;
-	$('.milliseconds').each(function() {
+	$('.milliseconds').each(function () {
 		array.push({p:counter++, ms:Number(this.value), wt: NaN, tt: NaN});
 	});
+	if (this.priorityVisible) {
+		// TODO Do something
+	}
 	this.processArray = array;
 	this.numberOfProcesses = array.length;
 };
@@ -212,6 +216,7 @@ GUI.calcFCFS = function () {
 
 	this.updateTimes();
 	this.generateGantt();
+	this.calcWaitAndTurnTime();
 };
 
 GUI.calcSJF = function () {
@@ -238,6 +243,15 @@ GUI.calcSJF = function () {
 	});
 
 	this.updateTimes();
+	this.calcWaitAndTurnTime();
+}
+
+GUI.calcRR = function () {
+	// TODO
+}
+
+GUI.calcPRI = function () {
+	// TODO
 }
 
 GUI.calcWaitAndTurnTime = function () {
@@ -254,41 +268,67 @@ GUI.calcWaitAndTurnTime = function () {
 	$('#avgturntime').text(round(sum / this.numberOfProcesses));
 };
 
+GUI.updateGUI = function () {
+	switch (this.selectedAlgorithm) {
+		case 0: // FCFS
+			this.calcFCFS();
+			break;
+		case 1: // SJF
+			this.calcSJF();
+			break;
+		case 2: // RR
+			//
+			break;
+		case 3: // PRI
+			//
+			break;
+	}
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 
 // This function executes once the page finishes loading
 $(function () {
 	GUI.generateGantt();
 
-	var quantumSpinner = $("#quantumSpinner").spinner();
+	var quantumSpinner = $("#quantumSpinner").spinner({
+		spin: function (event, ui) {
+			$('#title').text(ui.value); // Used for debugging
+		}, min: 1
+	});
+
+	var processError = false;
 
 	// jQuery UI for the spinner
 	var processSpinner = $("#processSpinner").spinner({
 		// Prevent spinner from being less than 1
 		spin: function (event, ui) {
-			if (ui.value < 1) {
-				$(this).spinner("value", 1);
-				return false;
+			if (ui.value < 1 || typeof ui.value !== 'number') {
+				processSpinner.parent().css({'border-color': '#c5c5c5'});
 			}
-			GUI.generateInput(ui.value);
-		}
+			onProcessSpinnerChange(ui.value);
+		}, min: 1
 	});
 	// Manual input for the spinner
 	processSpinner.on('keyup', function () {
 		var input = processSpinner.spinner('value');
 		if (input < 1) { // Error with typed input
 			processSpinner.parent().css('border-color', 'red');
-			return;
+			processError = true;
+		} else {
+			onProcessSpinnerChange(input);
 		}
-		processSpinner.parent().css({'border-color': '#c5c5c5'});
-		GUI.generateInput(input);
 	});
 	// Set initial value for the spinner
 	processSpinner.spinner('value', 1);
 
 	function onProcessSpinnerChange(input) {
-		processSpinner.parent().css({'border-color': '#c5c5c5'});
-		GUI.generateInput(input);
+		if (processError) {
+			processSpinner.parent().css({'border-color': '#c5c5c5'});
+			processError = false;
+		}
+		GUI.generateRows(input);
+		GUI.updateGUI();
 	}
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -298,6 +338,7 @@ $(function () {
 		change: function (event, data) {
 			GUI.selectedAlgorithm = data.item.index;
 			GUI.onAlgorithmComboBoxChange();
+			GUI.updateGUI();
 		}
 	});
 
@@ -307,17 +348,16 @@ $(function () {
 
 		// Scroll down
 		if (event.deltaY < 0 && GUI.selectedAlgorithm < 3) {
-			algorithmComboBox[0].selectedIndex += 1;
-			GUI.selectedAlgorithm += 1;
+			algorithmComboBox[0].selectedIndex = ++GUI.selectedAlgorithm;
 			algorithmComboBox.selectmenu('refresh');
 
 		// Scroll Up
 		} else if (event.deltaY > 0 && GUI.selectedAlgorithm > 0) {
-			algorithmComboBox[0].selectedIndex -= 1;
-			GUI.selectedAlgorithm -= 1;
+			algorithmComboBox[0].selectedIndex = --GUI.selectedAlgorithm;
 			algorithmComboBox.selectmenu('refresh');
 		}
 		GUI.onAlgorithmComboBoxChange();
+		GUI.updateGUI();
 	});
 
 	var randomButton = $('#randomButton').button();
@@ -328,7 +368,22 @@ $(function () {
 		$('.milliseconds').each(function() {
 			$(this).val(Math.floor(Math.random() * 10) + 1);
 		});
-	})
+		GUI.updateGUI();
+	});
+
+	// Event for all the input boxes
+	$('.div-row input').on('keyup', function () {
+		var value = Number($(this).val());
+		if (isNaN(value) || value < 1) {
+			$(this).css({
+				'border': 'red solid 1px'
+			})
+		} else {
+			$(this).css({
+				'border': '#c5c5c5 solid 1px'
+			})
+		}
+	});
 });
 
 // Regenerate the Gantt Chart on window resize
