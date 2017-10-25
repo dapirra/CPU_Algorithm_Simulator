@@ -39,29 +39,8 @@ var GUI = {
 		waitTime: undefined,
 		turnTime: undefined,
 		priority: undefined,
-
-		clone: function () {
-			return {
-				pid: this.pid,
-				burst: this.burst,
-				waitTime: this.waitTime,
-				turnTime: this.turnTime,
-				priority: this.priority
-			};
-		}
 	}]
 };
-
-// TODO Determine if I need clone methods
-GUI.cloneProcess = function (i) {
-	return {
-		pid: GUI.processArray[i].pid,
-		burst: GUI.processArray[i].burst,
-		waitTime: GUI.processArray[i].waitTime,
-		turnTime: GUI.processArray[i].turnTime,
-		priority: GUI.processArray[i].priority
-	};
-}
 
 // Returns the total number of milliseconds
 GUI.getTotalTime = function () {
