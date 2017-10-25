@@ -29,6 +29,7 @@ function round(number) {
 var GUI = {
 	numberOfProcesses: 1,
 	selectedAlgorithm: 0,
+	quantumValue: 1,
 	quantumVisible: false,
 	priorityVisible: false,
 
@@ -36,10 +37,31 @@ var GUI = {
 		pid: 1,
 		burst: 1,
 		waitTime: undefined,
-		turnTIme: undefined,
-		priority: undefined
+		turnTime: undefined,
+		priority: undefined,
+
+		clone: function () {
+			return {
+				pid: this.pid,
+				burst: this.burst,
+				waitTime: this.waitTime,
+				turnTime: this.turnTime,
+				priority: this.priority
+			};
+		}
 	}]
 };
+
+// TODO Determine if I need clone methods
+GUI.cloneProcess = function (i) {
+	return {
+		pid: GUI.processArray[i].pid,
+		burst: GUI.processArray[i].burst,
+		waitTime: GUI.processArray[i].waitTime,
+		turnTime: GUI.processArray[i].turnTime,
+		priority: GUI.processArray[i].priority
+	};
+}
 
 // Returns the total number of milliseconds
 GUI.getTotalTime = function () {
@@ -187,7 +209,7 @@ GUI.updateProcessArray = function () {
 			pid: counter++,
 			burst: Number(this.value),
 			waitTime: undefined,
-			turnTIme: undefined,
+			turnTime: undefined,
 			priority: GUI.priorityVisible ? $(this).parent().siblings().last().children().first().val() : undefined
 		});
 	});
@@ -199,13 +221,11 @@ GUI.updateTimes = function () {
 	var index = 0, array = this.processArray;
 	$('.waittime').each(function () {
 		$(this).text(array[index].waitTime);
-//		console.log(array[index].waitTime)
 		index++;
 	});
 	index = 0;
 	$('.turntime').each(function () {
-		$(this).text(array[index].turnTIme);
-//		console.log(array[index].turnTIme)
+		$(this).text(array[index].turnTime);
 		index++;
 	});
 };
@@ -213,17 +233,18 @@ GUI.updateTimes = function () {
 GUI.calcFCFS = function () {
 	this.updateProcessArray();
 
-	var element, waitTime = 0, turnTIme = 0;
+	// Calculate wait times and turnaround times
+	var element, waitTime = 0, turnTime = 0;
 	for (element in this.processArray) {
 		this.processArray[element].waitTime = waitTime;
-		turnTIme += this.processArray[element].burst;
-		this.processArray[element].turnTIme = turnTIme;
-		waitTime = turnTIme;
+		turnTime += this.processArray[element].burst;
+		this.processArray[element].turnTime = turnTime;
+		waitTime = turnTime;
 	}
 
 	this.updateTimes();
 	this.generateGantt();
-	this.calcWaitAndTurnTime();
+	this.calcAvgWaitAndTurnTime();
 };
 
 GUI.calcSJF = function () {
@@ -234,12 +255,13 @@ GUI.calcSJF = function () {
 		return a.burst - b.burst;
 	});
 
-	var element, waitTime = 0, turnTIme = 0;
+	// Calculate wait times and turnaround times
+	var element, waitTime = 0, turnTime = 0;
 	for (element in this.processArray) {
 		this.processArray[element].waitTime = waitTime;
-		turnTIme += this.processArray[element].burst;
-		this.processArray[element].turnTIme = turnTIme;
-		waitTime = turnTIme;
+		turnTime += this.processArray[element].burst;
+		this.processArray[element].turnTime = turnTime;
+		waitTime = turnTime;
 	}
 
 	this.generateGantt();
@@ -250,11 +272,64 @@ GUI.calcSJF = function () {
 	});
 
 	this.updateTimes();
-	this.calcWaitAndTurnTime();
+	this.calcAvgWaitAndTurnTime();
 }
 
 GUI.calcRR = function () {
-	// TODO
+	this.updateProcessArray();
+
+	var processString = JSON.stringify(this.processArray);
+	var processArrayBackup = JSON.parse(processString); // Store wait + turn around time
+	var processArrayClone = JSON.parse(processString); // Delete elements until empty
+	var i, j, currentTime = 0, currentBurst, currentPid, currentIndex, turnTime;
+	var ganttArray = [];
+
+	// Calculate turn times and Gantt Chart appearence
+	while (processArrayClone.length !== 0) {
+		for (i = 0; i < processArrayClone.length; i++) {
+			currentIndex = processArrayClone[i].pid - 1;
+			processArrayBackup[currentIndex].waitTime = 0; // Initiate this to 0
+			currentBurst = processArrayClone[i].burst;
+			// Add a new element to the Gantt array and remove it from the cloned array
+			if (currentBurst <= this.quantumValue) {
+				ganttArray.push(processArrayClone[i]);
+				currentTime += currentBurst;
+				processArrayBackup[currentIndex].turnTime = currentTime;
+				processArrayClone.splice(i, 1); // Delete element
+				i--; // Move i back one, since an object was just deleted
+			} else { // Subtract the burst time from the current element
+				processArrayClone[i].burst -= this.quantumValue;
+				currentTime += this.quantumValue;
+				ganttArray.push({
+					pid: processArrayClone[i].pid,
+					burst: this.quantumValue,
+				});
+			}
+		}
+	}
+
+	// Calculate wait times
+	for (i = 0; i < processArrayBackup.length; i++) { // Loop through each row on table
+		currentTime = 0;
+		currentPid = processArrayBackup[i].pid;
+		turnTime = processArrayBackup[i].turnTime;
+		for (j = 0; j < ganttArray.length; j++) { // Loop through Gantt chart values
+			currentBurst = ganttArray[j].burst;
+			if (ganttArray[j].pid !== currentPid && currentTime < turnTime) {
+				processArrayBackup[i].waitTime += currentBurst;
+			}
+			currentTime += currentBurst;
+		}
+	}
+
+	this.processArray = ganttArray;
+	this.generateGantt();
+
+	// Restore original version of the processArray
+	this.processArray = processArrayBackup;
+
+	this.updateTimes();
+	this.calcAvgWaitAndTurnTime();
 }
 
 GUI.calcPRI = function () {
@@ -265,12 +340,13 @@ GUI.calcPRI = function () {
 		return a.priority - b.priority;
 	});
 
-	var element, waitTime = 0, turnTIme = 0;
+	// Calculate wait times and turnaround times
+	var element, waitTime = 0, turnTime = 0;
 	for (element in this.processArray) {
 		this.processArray[element].waitTime = waitTime;
-		turnTIme += this.processArray[element].burst;
-		this.processArray[element].turnTIme = turnTIme;
-		waitTime = turnTIme;
+		turnTime += this.processArray[element].burst;
+		this.processArray[element].turnTime = turnTime;
+		waitTime = turnTime;
 	}
 
 	this.generateGantt();
@@ -281,10 +357,10 @@ GUI.calcPRI = function () {
 	});
 
 	this.updateTimes();
-	this.calcWaitAndTurnTime();
+	this.calcAvgWaitAndTurnTime();
 }
 
-GUI.calcWaitAndTurnTime = function () {
+GUI.calcAvgWaitAndTurnTime = function () {
 	var sum = 0, element;
 	for (element in this.processArray) {
 		sum += this.processArray[element].waitTime
@@ -293,7 +369,7 @@ GUI.calcWaitAndTurnTime = function () {
 
 	sum = 0;
 	for (element in this.processArray) {
-		sum += this.processArray[element].turnTIme
+		sum += this.processArray[element].turnTime
 	}
 	$('#avgturntime').text(round(sum / this.numberOfProcesses));
 };
@@ -307,7 +383,7 @@ GUI.updateGUI = function () {
 			this.calcSJF();
 			break;
 		case 2: // RR
-//			this.calcRR();
+			this.calcRR();
 			break;
 		case 3: // PRI
 			this.calcPRI();
@@ -323,9 +399,12 @@ $(function () {
 
 	var quantumSpinner = $("#quantumSpinner").spinner({
 		spin: function (event, ui) {
-			$('#title').text(ui.value); // Used for debugging
+//			$('#title').text(ui.value); // Used for debugging
+			GUI.quantumValue = ui.value;
+			GUI.updateGUI();
 		}, min: 1
 	});
+	quantumSpinner.spinner('value', 1);
 
 	var processError = false;
 

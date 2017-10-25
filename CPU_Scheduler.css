@@ -8,6 +8,12 @@
 	display: none;
 }
 
+/*Set the width of the spinners*/
+/*#quantumSpinner, #processSpinner {*/
+/*#quantumSpinner {
+	min-width: 35px;
+}*/
+
 /*Controls the style for subscripts used for P*/
 .sub {
 	vertical-align: sub;
