@@ -3,8 +3,8 @@
 	text-align: center;
 }
 
-/*Hide the Quantum Spinner*/
-#quantum {
+/*Hide the Quantum Spinner and Priority Button by default*/
+#quantum, #priorityButton {
 	display: none;
 }
 

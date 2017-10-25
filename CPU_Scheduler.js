@@ -52,30 +52,24 @@ GUI.getTotalTime = function () {
 };
 
 GUI.showQuantumSpinner = function () {
-	$('#quantum').css({
-		'display': 'inline'
-	});
+	$('#quantum').css('display', 'inline');
 	this.quantumVisible = true;
 };
 
 GUI.hideQuantumSpinner = function () {
-	$('#quantum').css({
-		'display': 'none'
-	});
+	$('#quantum').css('display', 'none');
 	this.quantumVisible = false;
 };
 
 GUI.showPriorityColumn = function () {
-	$('.priority').css({
-		'display': 'table-cell'
-	});
+	$('#priorityButton').css('display', 'inline');
+	$('.priority').css('display', 'table-cell');
 	this.priorityVisible = true;
 };
 
 GUI.hidePriorityColumn = function () {
-	$('.priority').css({
-		'display': 'none'
-	});
+	$('#priorityButton').css('display', 'none')
+	$('.priority').css('display', 'none');
 	this.priorityVisible = false;
 };
 
@@ -152,11 +146,7 @@ GUI.generateGantt = function () {
 GUI.generateRows = function (updatedNumOfRows) {
 	var numOfRows = this.numberOfProcesses, i;
 
-	// Used for debugging
-//	console.log(updatedNumOfRows + ' ' + numOfRows);
-
-	// Add rows
-	if (updatedNumOfRows > numOfRows) {
+	if (updatedNumOfRows > numOfRows) { // Add rows
 		for (i = numOfRows; i !== updatedNumOfRows;) {
 			i++;
 			$('#div-input').append('<div class="div-row" id="p' + i +
@@ -165,14 +155,13 @@ GUI.generateRows = function (updatedNumOfRows) {
 				'<div><input class="milliseconds" type="text"></div>' +
 				'<div class="waittime">?</div>' +
 				'<div class="turntime">?</div>' +
-				'<div class="priority"><input type="text"></div>' +
+				'<div class="priority"><input type="text" class="priority-input"></div>' +
 				'</div>')
 		}
 		// Make sure the priority column shows
 		if (this.priorityVisible) this.showPriorityColumn();
 
-	// Remove rows
-	} else if (updatedNumOfRows < numOfRows) {
+	} else if (updatedNumOfRows < numOfRows) { // Remove rows
 		for (i = numOfRows; i !== updatedNumOfRows; i--) {
 			$('#div-input').children().last().remove();
 		}
@@ -196,7 +185,7 @@ GUI.updateProcessArray = function () {
 	this.numberOfProcesses = array.length;
 };
 
-GUI.updateTimes = function () {
+GUI.updateTableWaitAndTurnTimes = function () {
 	var index = 0, array = this.processArray;
 	$('.waittime').each(function () {
 		$(this).text(array[index].waitTime);
@@ -221,7 +210,7 @@ GUI.calcFCFS = function () {
 		waitTime = turnTime;
 	}
 
-	this.updateTimes();
+	this.updateTableWaitAndTurnTimes();
 	this.generateGantt();
 	this.calcAvgWaitAndTurnTime();
 };
@@ -250,7 +239,7 @@ GUI.calcSJF = function () {
 		return a.pid - b.pid;
 	});
 
-	this.updateTimes();
+	this.updateTableWaitAndTurnTimes();
 	this.calcAvgWaitAndTurnTime();
 }
 
@@ -307,7 +296,7 @@ GUI.calcRR = function () {
 	// Restore original version of the processArray
 	this.processArray = processArrayBackup;
 
-	this.updateTimes();
+	this.updateTableWaitAndTurnTimes();
 	this.calcAvgWaitAndTurnTime();
 }
 
@@ -335,7 +324,7 @@ GUI.calcPRI = function () {
 		return a.pid - b.pid;
 	});
 
-	this.updateTimes();
+	this.updateTableWaitAndTurnTimes();
 	this.calcAvgWaitAndTurnTime();
 }
 
@@ -376,9 +365,9 @@ GUI.updateGUI = function () {
 $(function () {
 	GUI.generateGantt();
 
+	// jQuery UI for the quantum spinner
 	var quantumSpinner = $("#quantumSpinner").spinner({
 		spin: function (event, ui) {
-//			$('#title').text(ui.value); // Used for debugging
 			GUI.quantumValue = ui.value;
 			GUI.updateGUI();
 		}, min: 1
@@ -459,8 +448,18 @@ $(function () {
 		GUI.updateGUI();
 	});
 
+	var priorityButton = $('#priorityButton').button();
+
+	priorityButton.click(function (event) {
+		event.preventDefault();
+		$('.priority-input').each(function() {
+			$(this).val(Math.floor(Math.random() * 10) + 1);
+		});
+		GUI.updateGUI();
+	})
+
 	// Event for all the input boxes
-	$('.div-row input').on('keyup', function () {
+	/*$('.div-row input').on('keyup', function () {
 		var value = Number($(this).val());
 		if (isNaN(value) || value < 1) {
 			$(this).css({
@@ -471,7 +470,7 @@ $(function () {
 				'border': '#c5c5c5 solid 1px'
 			})
 		}
-	});
+	});*/
 });
 
 // Regenerate the Gantt Chart on window resize
