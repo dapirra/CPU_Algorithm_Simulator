@@ -62,24 +62,24 @@ GUI.getTotalBurstTime = function () {
 };
 
 GUI.showQuantumSpinner = function () {
-	$('#quantum').css('display', 'inline');
+	$('#quantum').show();
 	this.quantumVisible = true;
 };
 
 GUI.hideQuantumSpinner = function () {
-	$('#quantum').css('display', 'none');
+	$('#quantum').hide();
 	this.quantumVisible = false;
 };
 
 GUI.showPriorityColumn = function () {
-	$('#priorityButton').css('display', 'inline');
+	$('#priorityButton').show();
 	$('.priority').css('display', 'table-cell');
 	this.priorityVisible = true;
 };
 
 GUI.hidePriorityColumn = function () {
-	$('#priorityButton').css('display', 'none')
-	$('.priority').css('display', 'none');
+	$('#priorityButton').hide();
+	$('.priority').hide();
 	this.priorityVisible = false;
 };
 
@@ -387,6 +387,7 @@ $(function () {
 		}, min: 1
 	});
 	quantumSpinner.spinner('value', 5);
+	$('#quantum').hide();
 
 	var processError = false;
 
