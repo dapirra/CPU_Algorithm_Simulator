@@ -223,8 +223,6 @@ GUI.updateTableWaitAndTurnTimes = function () {
 };
 
 GUI.calcFCFS = function () {
-	this.updateProcessArray();
-
 	// Calculate wait times and turnaround times
 	var element, waitTime = 0, turnTime = 0;
 	for (element in this.processArray) {
@@ -234,14 +232,10 @@ GUI.calcFCFS = function () {
 		waitTime = turnTime;
 	}
 
-	this.updateTableWaitAndTurnTimes();
 	this.generateGantt();
-	this.calcAvgWaitAndTurnTime();
 };
 
 GUI.calcSJF = function () {
-	this.updateProcessArray();
-
 	// Sort array based on burst time order
 	this.processArray.sort(function (a, b) {
 		return a.burst - b.burst;
@@ -262,14 +256,9 @@ GUI.calcSJF = function () {
 	this.processArray.sort(function (a, b) {
 		return a.pid - b.pid;
 	});
-
-	this.updateTableWaitAndTurnTimes();
-	this.calcAvgWaitAndTurnTime();
 }
 
 GUI.calcRR = function () {
-	this.updateProcessArray();
-
 	var processString = JSON.stringify(this.processArray);
 	var processArrayBackup = JSON.parse(processString); // Store wait + turn around time
 	var processArrayClone = JSON.parse(processString); // Delete elements until empty
@@ -319,14 +308,9 @@ GUI.calcRR = function () {
 
 	// Restore original version of the processArray
 	this.processArray = processArrayBackup;
-
-	this.updateTableWaitAndTurnTimes();
-	this.calcAvgWaitAndTurnTime();
 }
 
 GUI.calcPRI = function () {
-	this.updateProcessArray();
-
 	// Sort array based on priority order
 	this.processArray.sort(function (a, b) {
 		return a.priority - b.priority;
@@ -347,9 +331,6 @@ GUI.calcPRI = function () {
 	this.processArray.sort(function (a, b) {
 		return a.pid - b.pid;
 	});
-
-	this.updateTableWaitAndTurnTimes();
-	this.calcAvgWaitAndTurnTime();
 }
 
 GUI.calcAvgWaitAndTurnTime = function () {
@@ -367,6 +348,7 @@ GUI.calcAvgWaitAndTurnTime = function () {
 };
 
 GUI.updateGUI = function () {
+	this.updateProcessArray();
 	switch (this.selectedAlgorithm) {
 		case 0: // FCFS
 			this.calcFCFS();
@@ -381,6 +363,8 @@ GUI.updateGUI = function () {
 			this.calcPRI();
 			break;
 	}
+	this.updateTableWaitAndTurnTimes();
+	this.calcAvgWaitAndTurnTime();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -402,7 +386,7 @@ $(function () {
 			}
 		}, min: 1
 	});
-	quantumSpinner.spinner('value', 1);
+	quantumSpinner.spinner('value', 5);
 
 	var processError = false;
 
