@@ -165,12 +165,18 @@ GUI.generateRows = function (updatedNumOfRows) {
 				'<div><input class="milliseconds" type="text" value="1"></div>' +
 				'<div class="waittime">?</div>' +
 				'<div class="turntime">?</div>' +
-				'<div class="priority"><input type="text" class="priority-input"></div>' +
+				'<div class="priority"><input type="text" class="priority-input" value="0"></div>' +
 				'</div>')
-			$("#p" + i + " input").spinner({
+			$("#p" + i + " .milliseconds").spinner({
 				spin: function (event, ui) {
+					$(this).spinner('value', ui.value); // Prevent spinner from being off by one
 					GUI.updateGUI();
-					console.log('test');
+				}, min: 1
+			});
+			$("#p" + i + " .priority-input").spinner({
+				spin: function (event, ui) {
+					$(this).spinner('value', ui.value); // Prevent spinner from being off by one
+					GUI.updateGUI();
 				}, min: 1
 			});
 		}
@@ -191,10 +197,12 @@ GUI.updateProcessArray = function () {
 	$('.milliseconds').each(function () {
 		array.push({
 			pid: counter++,
-			burst: Number(this.value),
+//			burst: Number(this.value),
+			burst: $(this).spinner('value'),
 			waitTime: undefined,
 			turnTime: undefined,
-			priority: GUI.priorityVisible ? $(this).parent().siblings().last().children().first().val() : undefined
+//			priority: GUI.priorityVisible ? $(this).parent().siblings().last().children().first().val() : undefined
+			priority: GUI.priorityVisible ? $(this).parent().parent().siblings().last().children().children().spinner('value') : undefined
 		});
 	});
 	this.processArray = array;
@@ -480,10 +488,18 @@ $(function () {
 		GUI.updateGUI();
 	})
 
-	$('.milliseconds, .priority-input').spinner({
+	$('.milliseconds').spinner({
 		spin: function (event, ui) {
+			$(this).spinner('value', ui.value); // Prevent spinner from being off by one
 			GUI.updateGUI();
 		}, min: 1
+	});
+
+	$('.priority-input').spinner({
+		spin: function (event, ui) {
+			$(this).spinner('value', ui.value); // Prevent spinner from being off by one
+			GUI.updateGUI();
+		}, min: 0
 	});
 
 	// Event for all the input boxes
