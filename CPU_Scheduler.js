@@ -23,6 +23,16 @@ function round(number) {
 }
 
 // TODO Create a super spinner for all user input values.
+// Unused
+function superSpinner(thisElement) {
+	var newSpinner = $(thisElement).spinner({
+		spin: function (event, ui) {
+			GUI.updateGUI();
+		},
+		min: 1
+	});
+	return newSpinner;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -43,7 +53,7 @@ var GUI = {
 };
 
 // Returns the total number of milliseconds
-GUI.getTotalTime = function () {
+GUI.getTotalBurstTime = function () {
 	var total = 0, element;
 	for (element in this.processArray) {
 		total += this.processArray[element].burst;
@@ -103,7 +113,7 @@ GUI.generateGantt = function () {
 	var i, block, leftShift = 0, percent,
 		width = $('#gantt').width(),
 		len = this.processArray.length,
-		totalTime = this.getTotalTime(this.processArray),
+		totalTime = this.getTotalBurstTime(this.processArray),
 		lowerNumber = 0
 
 	// Loop through each process
@@ -152,11 +162,17 @@ GUI.generateRows = function (updatedNumOfRows) {
 			$('#div-input').append('<div class="div-row" id="p' + i +
 				'"><div>P<span class="sub">' + i +
 				'</span></div>' +
-				'<div><input class="milliseconds" type="text"></div>' +
+				'<div><input class="milliseconds" type="text" value="1"></div>' +
 				'<div class="waittime">?</div>' +
 				'<div class="turntime">?</div>' +
 				'<div class="priority"><input type="text" class="priority-input"></div>' +
 				'</div>')
+			$("#p" + i + " input").spinner({
+				spin: function (event, ui) {
+					GUI.updateGUI();
+					console.log('test');
+				}, min: 1
+			});
 		}
 		// Make sure the priority column shows
 		if (this.priorityVisible) this.showPriorityColumn();
@@ -368,8 +384,14 @@ $(function () {
 	// jQuery UI for the quantum spinner
 	var quantumSpinner = $("#quantumSpinner").spinner({
 		spin: function (event, ui) {
-			GUI.quantumValue = ui.value;
-			GUI.updateGUI();
+			if ($(this).spinner('isValid')) {
+				console.log('Valid');
+				GUI.quantumValue = ui.value;
+				GUI.updateGUI();
+			} else {
+				console.log('Invalid');
+				$(this).parent().css({'border-color': '#c5c5c5'});
+			}
 		}, min: 1
 	});
 	quantumSpinner.spinner('value', 1);
@@ -457,6 +479,12 @@ $(function () {
 		});
 		GUI.updateGUI();
 	})
+
+	$('.milliseconds, .priority-input').spinner({
+		spin: function (event, ui) {
+			GUI.updateGUI();
+		}, min: 1
+	});
 
 	// Event for all the input boxes
 	/*$('.div-row input').on('keyup', function () {
