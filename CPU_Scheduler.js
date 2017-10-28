@@ -160,13 +160,17 @@ GUI.generateRows = function (updatedNumOfRows) {
 		for (i = numOfRows; i !== updatedNumOfRows;) {
 			i++;
 			$('#div-input').append('<div class="div-row" id="p' + i +
-				'"><div>P<span class="sub">' + i +
+				'" style="display: none;"><div>P<span class="sub">' + i +
 				'</span></div>' +
 				'<div><input class="milliseconds" type="text" value="1"></div>' +
 				'<div class="waittime">?</div>' +
 				'<div class="turntime">?</div>' +
 				'<div class="priority"><input type="text" class="priority-input" value="0"></div>' +
 				'</div>')
+//			$('#p' + i).slideDown();
+			$('#p' + i).fadeIn();
+
+			// Events for the spinners
 			$("#p" + i + " .milliseconds").spinner({
 				spin: function (event, ui) {
 					$(this).spinner('value', ui.value); // Prevent spinner from being off by one
@@ -177,7 +181,7 @@ GUI.generateRows = function (updatedNumOfRows) {
 				spin: function (event, ui) {
 					$(this).spinner('value', ui.value); // Prevent spinner from being off by one
 					GUI.updateGUI();
-				}, min: 1
+				}, min: 0
 			});
 		}
 		// Make sure the priority column shows
@@ -185,6 +189,7 @@ GUI.generateRows = function (updatedNumOfRows) {
 
 	} else if (updatedNumOfRows < numOfRows) { // Remove rows
 		for (i = numOfRows; i !== updatedNumOfRows; i--) {
+			$('#div-input').children().last().fadeOut();
 			$('#div-input').children().last().remove();
 		}
 	}
