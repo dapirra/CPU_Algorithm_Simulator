@@ -29,6 +29,24 @@ function round(number) {
 	return number.toFixed(2);
 }
 
+////////////////////////////////////////////////////////////////////////////////
+
+var GUI = {
+	numberOfProcesses: 1,
+	selectedAlgorithm: 0,
+	quantumValue: 5,
+	quantumVisible: false,
+	priorityVisible: false,
+
+	processArray: [{
+		pid: 1,
+		burst: 1,
+		waitTime: undefined,
+		turnTime: undefined,
+		priority: undefined
+	}]
+};
+
 // Extend the default functionality of the spinner from jQuery UI
 function newExtendedSpinner(thisElement, min, startValue, allowDecimal,
 						successFunc, isInvalid, warningFunc) {
@@ -107,24 +125,6 @@ function newExtendedSpinner(thisElement, min, startValue, allowDecimal,
 	return newSpinner;
 }
 
-////////////////////////////////////////////////////////////////////////////////
-
-var GUI = {
-	numberOfProcesses: 1,
-	selectedAlgorithm: 0,
-	quantumValue: 5,
-	quantumVisible: false,
-	priorityVisible: false,
-
-	processArray: [{
-		pid: 1,
-		burst: 1,
-		waitTime: undefined,
-		turnTime: undefined,
-		priority: undefined
-	}]
-};
-
 // Returns the total number of milliseconds
 GUI.getTotalBurstTime = function () {
 	var total = 0, element;
@@ -159,16 +159,15 @@ GUI.hidePriorityColumn = function () {
 GUI.onAlgorithmComboBoxChange = function () {
 	switch (this.selectedAlgorithm) {
 		case 0: // FCFS
-			if (this.priorityVisible) this.hidePriorityColumn();
 			if (this.quantumVisible) this.hideQuantumSpinner();
+			else if (this.priorityVisible) this.hidePriorityColumn();
 			break;
 		case 1: // SJF
-			if (this.priorityVisible) this.hidePriorityColumn();
 			if (this.quantumVisible) this.hideQuantumSpinner();
+			else if (this.priorityVisible) this.hidePriorityColumn();
 			break;
 		case 2: // RR
 			if (this.priorityVisible) this.hidePriorityColumn();
-			if (this.quantumVisible) this.hideQuantumSpinner();
 			this.showQuantumSpinner();
 			break;
 		case 3: // PRI
