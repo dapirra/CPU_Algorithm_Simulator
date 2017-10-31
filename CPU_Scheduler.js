@@ -1,36 +1,109 @@
-// Prevent ESLint from complaining
-var $;
-var window;
-var document;
-var console;
+/*jshint camelcase: true, quotmark: single, undef: true, unused: vars, latedef: nofunc, asi: false, boss: false, laxbreak: false, laxcomma: false, multistr: false, sub: false, supernew: false, browser: true, devel: true, jquery: true, indent: 4*/
+// JSHint settings on first line
+
+/*
+
+CPU Scheduler Simulator
+
+Name: David Pirraglia
+
+Professor: Sister Jane Fritz
+
+Class: COM 310
+
+*/
 
 // Not used currently
 function generateSubscript(num) {
-	var subscript = $('<span></span>').attr({
-		'class': 'sub'
-	});
-	subscript.text(num);
-	return subscript;
+	return 'P<span class="sub">' + num + '</span>';
+}
+
+// Returns true or false depending on weather a number is an int and not a double
+function isInt(number) {
+	return Math.floor(number) == number;
 }
 
 // Rounds a number to 2 decimal places if it's a decimal
 function round(number) {
-	if (Math.floor(number) == number) {
-		return number;
-	} else {
-		return number.toFixed(2);
-	}
+	if (isInt(number)) return number;
+	return number.toFixed(2);
 }
 
-// TODO Create a super spinner for all user input values.
-// Unused
-function superSpinner(thisElement) {
+// Extend the default functionality of the spinner from jQuery UI
+function newExtendedSpinner(thisElement, min, startValue, allowDecimal,
+						successFunc, isInvalid, warningFunc) {
+
+	if (successFunc === undefined) {
+		successFunc = function () {
+			GUI.updateGUI();
+		};
+	}
+	if (isInvalid === undefined) {
+		isInvalid = function (value) {
+			return isNaN(value) || value < min || (allowDecimal ? false : !isInt(value));
+		};
+	}
+
+	var isError = false;
+
 	var newSpinner = $(thisElement).spinner({
 		spin: function (event, ui) {
-			GUI.updateGUI();
+			var value = ui.value; // Get spinner value
+			newSpinner.spinner('value', value); // Prevent spinner from being off by one
+			if (isError) { // Reset color
+				isError = false;
+				newSpinner.parent().css('border', '#c5c5c5 solid 1px');
+			}
+			successFunc(value);
 		},
-		min: 1
+		min: min
 	});
+	newSpinner.on('keyup', function () {
+		var value = newSpinner.spinner('value'); // Get spinner value
+
+		/*
+		// Value is valid
+		if (value >= min && value != '' && (allowDecimal ? true : isInt(value))) {
+			newSpinner.parent().css('border', '#c5c5c5 solid 1px');
+			successFunc(value);
+
+		// Value is invalid
+		} else {
+			newSpinner.parent().css('border', 'red solid 1px');
+			isError = true;
+		}
+		*/
+
+//		/*
+		// Value is invalid
+		if (isNaN(value) || value < min || (allowDecimal ? false : !isInt(value))) {
+			newSpinner.parent().css('border', 'red solid 1px');
+			isError = true;
+		// Value is valid
+		} else {
+			newSpinner.parent().css('border', '#c5c5c5 solid 1px');
+			successFunc(value);
+		}
+//		*/
+
+		/*
+		// Value is invalid
+		if (isInvalid()) {
+			newSpinner.parent().css('border', 'red solid 1px');
+			isError = true;
+		// Value is not recommended
+		} else if (warningFunc !== undefined) {
+			warningFunc();
+		// Value is valid
+		} else {
+			newSpinner.parent().css('border', '#c5c5c5 solid 1px');
+			successFunc(value);
+		}
+		*/
+
+		console.log('test: ' + value);
+	});
+	newSpinner.spinner('value', startValue);
 	return newSpinner;
 }
 
@@ -39,7 +112,7 @@ function superSpinner(thisElement) {
 var GUI = {
 	numberOfProcesses: 1,
 	selectedAlgorithm: 0,
-	quantumValue: 1,
+	quantumValue: 5,
 	quantumVisible: false,
 	priorityVisible: false,
 
@@ -48,7 +121,7 @@ var GUI = {
 		burst: 1,
 		waitTime: undefined,
 		turnTime: undefined,
-		priority: undefined,
+		priority: undefined
 	}]
 };
 
@@ -96,7 +169,7 @@ GUI.onAlgorithmComboBoxChange = function () {
 		case 2: // RR
 			if (this.priorityVisible) this.hidePriorityColumn();
 			if (this.quantumVisible) this.hideQuantumSpinner();
-			this.showQuantumSpinner()
+			this.showQuantumSpinner();
 			break;
 		case 3: // PRI
 			if (this.quantumVisible) this.hideQuantumSpinner();
@@ -107,28 +180,30 @@ GUI.onAlgorithmComboBoxChange = function () {
 
 GUI.generateGantt = function () {
 	// Clear any previous data
-	document.getElementById('gantt').innerHTML = ''
+	document.getElementById('gantt').innerHTML = '';
 
 	// Declare variables
 	var i, block, leftShift = 0, percent,
 		width = $('#gantt').width(),
 		len = this.processArray.length,
 		totalTime = this.getTotalBurstTime(this.processArray),
-		lowerNumber = 0
+		lowerNumber = 0;
 
 	// Loop through each process
 	for (i = 0; i < len; i++) {
+		if (this.processArray[i].burst === 0) continue;
+
 		percent = this.processArray[i].burst / totalTime;
 
 		// Create the gantt cell and attributes
 		block = $('<div></div>').attr({
-			'class': "gantt-cell"
+			'class': 'gantt-cell'
 		});
 
 		// Add the text for the cell
-		block.append('<div class="gantt-label">P<span class="sub">' +
-					this.processArray[i].pid +
-					'</span></div><div class="lower">' +
+		block.append('<div class="gantt-label">' +
+					generateSubscript(this.processArray[i].pid) +
+					'</div><div class="lower">' +
 					lowerNumber + '</div>');
 
 		// Add the properties for the size of the cell
@@ -157,39 +232,25 @@ GUI.generateRows = function (updatedNumOfRows) {
 	var numOfRows = this.numberOfProcesses, i;
 
 	if (updatedNumOfRows > numOfRows) { // Add rows
-		for (i = numOfRows; i !== updatedNumOfRows;) {
+		for (i = numOfRows; i < updatedNumOfRows;) {
 			i++;
 			$('#div-input').append('<div class="div-row" id="p' + i +
-				'" style="display: none;"><div>P<span class="sub">' + i +
-				'</span></div>' +
+				'"><div>' + generateSubscript(i) + '</div>' +
 				'<div><input class="milliseconds" type="text" value="1"></div>' +
 				'<div class="waittime">?</div>' +
 				'<div class="turntime">?</div>' +
 				'<div class="priority"><input type="text" class="priority-input" value="0"></div>' +
-				'</div>')
-//			$('#p' + i).slideDown();
-			$('#p' + i).fadeIn();
+				'</div>');
 
 			// Events for the spinners
-			$("#p" + i + " .milliseconds").spinner({
-				spin: function (event, ui) {
-					$(this).spinner('value', ui.value); // Prevent spinner from being off by one
-					GUI.updateGUI();
-				}, min: 1
-			});
-			$("#p" + i + " .priority-input").spinner({
-				spin: function (event, ui) {
-					$(this).spinner('value', ui.value); // Prevent spinner from being off by one
-					GUI.updateGUI();
-				}, min: 0
-			});
+			newExtendedSpinner($('#p' + i + ' .milliseconds'), 1, 1, true);
+			newExtendedSpinner($('#p' + i + ' .priority-input'), 0, 0, false);
 		}
 		// Make sure the priority column shows
 		if (this.priorityVisible) this.showPriorityColumn();
 
 	} else if (updatedNumOfRows < numOfRows) { // Remove rows
-		for (i = numOfRows; i !== updatedNumOfRows; i--) {
-			$('#div-input').children().last().fadeOut();
+		for (i = numOfRows; i > updatedNumOfRows; i--) {
 			$('#div-input').children().last().remove();
 		}
 	}
@@ -261,7 +322,7 @@ GUI.calcSJF = function () {
 	this.processArray.sort(function (a, b) {
 		return a.pid - b.pid;
 	});
-}
+};
 
 GUI.calcRR = function () {
 	var processString = JSON.stringify(this.processArray);
@@ -313,7 +374,7 @@ GUI.calcRR = function () {
 
 	// Restore original version of the processArray
 	this.processArray = processArrayBackup;
-}
+};
 
 GUI.calcPRI = function () {
 	// Sort array based on priority order
@@ -336,18 +397,18 @@ GUI.calcPRI = function () {
 	this.processArray.sort(function (a, b) {
 		return a.pid - b.pid;
 	});
-}
+};
 
 GUI.calcAvgWaitAndTurnTime = function () {
 	var sum = 0, element;
 	for (element in this.processArray) {
-		sum += this.processArray[element].waitTime
+		sum += this.processArray[element].waitTime;
 	}
 	$('#avgwaittime').text(round(sum / this.numberOfProcesses));
 
 	sum = 0;
 	for (element in this.processArray) {
-		sum += this.processArray[element].turnTime
+		sum += this.processArray[element].turnTime;
 	}
 	$('#avgturntime').text(round(sum / this.numberOfProcesses));
 };
@@ -370,7 +431,7 @@ GUI.updateGUI = function () {
 	}
 	this.updateTableWaitAndTurnTimes();
 	this.calcAvgWaitAndTurnTime();
-}
+};
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -378,60 +439,22 @@ GUI.updateGUI = function () {
 $(function () {
 	GUI.generateGantt();
 
-	// jQuery UI for the quantum spinner
-	var quantumSpinner = $("#quantumSpinner").spinner({
-		spin: function (event, ui) {
-			if ($(this).spinner('isValid')) {
-				console.log('Valid');
-				GUI.quantumValue = ui.value;
-				GUI.updateGUI();
-			} else {
-				console.log('Invalid');
-				$(this).parent().css({'border-color': '#c5c5c5'});
-			}
-		}, min: 1
-	});
-	quantumSpinner.spinner('value', 5);
-	$('#quantum').hide();
-
-	var processError = false;
-
-	// jQuery UI for the spinner
-	var processSpinner = $("#processSpinner").spinner({
-		// Prevent spinner from being less than 1
-		spin: function (event, ui) {
-			if (ui.value < 1 || typeof ui.value !== 'number') {
-				processSpinner.parent().css({'border-color': '#c5c5c5'});
-			}
-			onProcessSpinnerChange(ui.value);
-		}, min: 1
-	});
-	// Manual input for the spinner
-	processSpinner.on('keyup', function () {
-		var input = processSpinner.spinner('value');
-		if (input < 1) { // Error with typed input
-			processSpinner.parent().css('border-color', 'red');
-			processError = true;
-		} else {
-			onProcessSpinnerChange(input);
-		}
-	});
-	// Set initial value for the spinner
-	processSpinner.spinner('value', 1);
-
-	function onProcessSpinnerChange(input) {
-		if (processError) {
-			processSpinner.parent().css({'border-color': '#c5c5c5'});
-			processError = false;
-		}
-		GUI.generateRows(input);
+	// Create the quantum spinner
+	newExtendedSpinner($('#quantumSpinner'), 1, 5, true, function (value) {
+		GUI.quantumValue = value;
 		GUI.updateGUI();
-	}
+	});
+
+	// Create the process spinner
+	newExtendedSpinner($('#processSpinner'), 1, 1, false, function (value) {
+		GUI.generateRows(value);
+		GUI.updateGUI();
+	});
 
 ////////////////////////////////////////////////////////////////////////////////
 
 	// jQuery UI for the algorithm combo box
-	var algorithmComboBox = $("#algorithm").selectmenu({
+	var algorithmComboBox = $('#algorithm').selectmenu({
 		change: function (event, data) {
 			GUI.selectedAlgorithm = data.item.index;
 			GUI.onAlgorithmComboBoxChange();
@@ -439,7 +462,7 @@ $(function () {
 		}
 	});
 
-	// Allow the combo box to be changed by scrolling up and down
+	// Allow the combo box to be changed by scrolling up and down with the mousewheel
 	algorithmComboBox.next().on('mousewheel', function (event) {
 		GUI.selectedAlgorithm = algorithmComboBox[0].selectedIndex;
 
@@ -469,42 +492,16 @@ $(function () {
 	});
 
 	var priorityButton = $('#priorityButton').button();
-
 	priorityButton.click(function (event) {
 		event.preventDefault();
 		$('.priority-input').each(function() {
 			$(this).val(Math.floor(Math.random() * 10) + 1);
 		});
 		GUI.updateGUI();
-	})
-
-	$('.milliseconds').spinner({
-		spin: function (event, ui) {
-			$(this).spinner('value', ui.value); // Prevent spinner from being off by one
-			GUI.updateGUI();
-		}, min: 1
 	});
 
-	$('.priority-input').spinner({
-		spin: function (event, ui) {
-			$(this).spinner('value', ui.value); // Prevent spinner from being off by one
-			GUI.updateGUI();
-		}, min: 0
-	});
-
-	// Event for all the input boxes
-	/*$('.div-row input').on('keyup', function () {
-		var value = Number($(this).val());
-		if (isNaN(value) || value < 1) {
-			$(this).css({
-				'border': 'red solid 1px'
-			})
-		} else {
-			$(this).css({
-				'border': '#c5c5c5 solid 1px'
-			})
-		}
-	});*/
+	newExtendedSpinner($('.milliseconds'), 1, 1, true);
+	newExtendedSpinner($('.priority-input'), 0, 0, false);
 });
 
 // Regenerate the Gantt Chart on window resize
