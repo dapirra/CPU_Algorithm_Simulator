@@ -35,10 +35,11 @@ Class: COM 310
 /**************************** Styles for the table ****************************/
 
 #div-input {
-	display: table;
-	border: 1px solid #c5c5c5;
-	border-radius: 3px;
+	display: block;
 	border-collapse: collapse;
+	max-height: 230px;
+	max-width: 550px;
+	overflow: auto;
 }
 
 #div-head, .div-row {
