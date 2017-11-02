@@ -494,7 +494,7 @@ $(function () {
 	priorityButton.click(function (event) {
 		event.preventDefault();
 		$('.priority-input').each(function() {
-			$(this).val(Math.floor(Math.random() * 10) + 1);
+			$(this).val(Math.floor(Math.random() * 11));
 		});
 		GUI.updateGUI();
 	});
