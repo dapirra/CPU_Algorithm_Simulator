@@ -1,4 +1,4 @@
-/*jshint camelcase: true, quotmark: single, undef: true, unused: vars, latedef: nofunc, asi: false, boss: false, laxbreak: false, laxcomma: false, multistr: false, sub: false, supernew: false, browser: true, devel: true, jquery: true, indent: 4*/
+/*jshint camelcase: true, quotmark: single, undef: false, unused: vars, latedef: nofunc, asi: false, boss: false, laxbreak: false, laxcomma: false, multistr: false, sub: false, supernew: false, browser: true, devel: true, jquery: true, indent: 4*/
 // JSHint settings on first line
 
 /*
@@ -49,7 +49,7 @@ var GUI = {
 
 // Extend the default functionality of the spinner from jQuery UI
 function newExtendedSpinner(thisElement, min, startValue, allowDecimal,
-						successFunc, isInvalid, warningFunc) {
+						successFunc, isInvalid, warningCondition, warningFunc) {
 
 	if (successFunc === undefined) {
 		successFunc = function () {
@@ -70,7 +70,7 @@ function newExtendedSpinner(thisElement, min, startValue, allowDecimal,
 			newSpinner.spinner('value', value); // Prevent spinner from being off by one
 			if (isError) { // Reset color
 				isError = false;
-				newSpinner.parent().css('border', '#c5c5c5 solid 1px');
+				newSpinner.parent().css('border', '#C5C5C5 solid 1px');
 			}
 			successFunc(value);
 		},
@@ -82,7 +82,7 @@ function newExtendedSpinner(thisElement, min, startValue, allowDecimal,
 		/*
 		// Value is valid
 		if (value >= min && value != '' && (allowDecimal ? true : isInt(value))) {
-			newSpinner.parent().css('border', '#c5c5c5 solid 1px');
+			newSpinner.parent().css('border', '#C5C5C5 solid 1px');
 			successFunc(value);
 
 		// Value is invalid
@@ -99,7 +99,7 @@ function newExtendedSpinner(thisElement, min, startValue, allowDecimal,
 			isError = true;
 		// Value is valid
 		} else {
-			newSpinner.parent().css('border', '#c5c5c5 solid 1px');
+			newSpinner.parent().css('border', '#C5C5C5 solid 1px');
 			successFunc(value);
 		}
 //		*/
@@ -114,7 +114,7 @@ function newExtendedSpinner(thisElement, min, startValue, allowDecimal,
 			warningFunc();
 		// Value is valid
 		} else {
-			newSpinner.parent().css('border', '#c5c5c5 solid 1px');
+			newSpinner.parent().css('border', '#C5C5C5 solid 1px');
 			successFunc(value);
 		}
 		*/
@@ -490,6 +490,7 @@ $(function () {
 		GUI.updateGUI();
 	});
 
+	// Event for when the random priority button is clicked
 	var priorityButton = $('#priorityButton').button();
 	priorityButton.click(function (event) {
 		event.preventDefault();
@@ -499,8 +500,22 @@ $(function () {
 		GUI.updateGUI();
 	});
 
+	// Add spinners to the burst spinners and priority spinners
 	newExtendedSpinner($('.milliseconds'), 1, 1, true);
 	newExtendedSpinner($('.priority-input'), 0, 0, false);
+
+	// Make the table resizeable
+	$('#div-resize').resizable({
+		resize: function (event, ui) {
+			$('#div-input').css({
+				'max-width': ui.size.width - 15,
+				'max-height': ui.size.height - 15
+			});
+		}
+	});
+	// Set initial size of the table
+	$('#div-resize').width(500);
+	$('#div-resize').height(100);
 });
 
 // Regenerate the Gantt Chart on window resize

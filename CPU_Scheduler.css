@@ -37,9 +37,31 @@ Class: COM 310
 #div-input {
 	display: block;
 	border-collapse: collapse;
-	max-height: 230px;
-	max-width: 550px;
+	max-width: 520px;
+	max-height: 105px;
 	overflow: auto;
+}
+
+/*Styles for the table scroll bars*/
+
+#div-input::-webkit-scrollbar-track
+{
+	-webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+	background-color: #F5F5F5;
+}
+
+#div-input::-webkit-scrollbar
+{
+	width: 6px;
+	height: 6px;
+	background-color: #F5F5F5;
+}
+
+#div-input::-webkit-scrollbar-thumb
+{
+/*	background-color: #00A2E8;*/
+/*	background-color: #007FFF;*/
+	background-color: #C5C5C5;
 }
 
 #div-head, .div-row {
@@ -53,7 +75,7 @@ Class: COM 310
 
 #div-head div, .div-row div {
 	display: table-cell;
-	border: 1px solid #c5c5c5;
+	border: 1px solid #C5C5C5;
 	text-align: left;
 	padding: 8px;
 }
@@ -71,9 +93,9 @@ Class: COM 310
 /************************* Styles for the Gantt Chart *************************/
 
 #gantt {
-	border: solid #c5c5c5 1px;
+	border: solid #C5C5C5 1px;
 	border-radius: 3px;
-	background-color: #f6f6f6;
+	background-color: #F6F6F6;
 	height: 30px;
 	display: block;
 	position: absolute;
@@ -83,7 +105,7 @@ Class: COM 310
 }
 
 .gantt-cell {
-	border-left: solid #c5c5c5 1px;
+	border-left: solid #C5C5C5 1px;
 	display: inline-block;
 	position: absolute;
 	height: inherit;
