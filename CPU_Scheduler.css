@@ -121,6 +121,7 @@ Class: COM 310
 	text-align: center;
 }
 
+/*Style for the numbers below the chart*/
 .lower {
 	margin-top: 9px;
 	margin-left: -5px;

@@ -1,5 +1,5 @@
 /*jshint camelcase: true, quotmark: single, undef: false, unused: vars, latedef: nofunc, asi: false, boss: false, laxbreak: false, laxcomma: false, multistr: false, sub: false, supernew: false, browser: true, devel: true, jquery: true, indent: 4*/
-// JSHint settings on first line
+// JSHint settings on first line (JSHint is used to find errors in JavaScript)
 
 /*
 
@@ -13,12 +13,12 @@ Class: COM 310
 
 */
 
-// Not used currently
+// Used to make the subscripts used on the table and the gantt chart
 function generateSubscript(num) {
 	return 'P<span class="sub">' + num + '</span>';
 }
 
-// Returns true or false depending on weather a number is an int and not a double
+// Returns true or false depending on weather number is an int or double
 function isInt(number) {
 	return Math.floor(number) == number;
 }
@@ -31,6 +31,7 @@ function round(number) {
 
 ////////////////////////////////////////////////////////////////////////////////
 
+// GUI object used for controling the user interface
 var GUI = {
 	numberOfProcesses: 1,
 	selectedAlgorithm: 0,
@@ -434,7 +435,7 @@ GUI.updateGUI = function () {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-// This function executes once the page finishes loading
+// This function will execute once the page is finished loading
 $(function () {
 	GUI.generateGantt();
 
@@ -518,7 +519,7 @@ $(function () {
 	$('#div-resize').height(100);
 });
 
-// Regenerate the Gantt Chart on window resize
+// Update the user interface when the window is resized
 $(window).resize(function() {
 	GUI.updateGUI();
 });

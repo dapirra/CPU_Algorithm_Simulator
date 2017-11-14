@@ -26,7 +26,7 @@ Class: COM 310
 		<link rel="stylesheet" href="http://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
 		<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
 
-		<!--Include mouse wheel functions for jQuery-->
+		<!--Include mousewheel functions for jQuery-->
 		<script src="https://jqueryui.com/resources/demos/external/jquery-mousewheel/jquery.mousewheel.js"></script>
 
 		<!--Include Project CSS and JS file-->
@@ -36,6 +36,7 @@ Class: COM 310
 	<body>
 		<h2 id="title">CPU Scheduler Simulator</h2>
 
+		<!--Input Options-->
 		<form>
 			<p>
 				<label for="processSpinner">Select the number of processes:</label>
@@ -62,6 +63,7 @@ Class: COM 310
 			</p>
 		</form>
 
+		<!--Table-->
 		<div id="div-resize">
 			<div id="div-input">
 				<div id="div-head">
@@ -84,8 +86,8 @@ Class: COM 310
 		<p>Average Wait Time: <span id="avgwaittime">0</span></p>
 		<p>Average Turnaround Time: <span id="avgturntime">1</span></p>
 
+		<!--Gantt Chart-->
 		<h2 id="h2">Gantt Chart</h2>
-		<div id="gantt">
-		</div>
+		<div id="gantt"></div>
 	</body>
 </html>
