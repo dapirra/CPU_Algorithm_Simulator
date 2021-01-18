@@ -10,7 +10,7 @@ Class: COM 310
 
 */
 
-/*Center the titile of the page*/
+/*Center the title of the page*/
 #title {
 	text-align: center;
 }
@@ -38,7 +38,7 @@ Class: COM 310
 	display: block;
 	border-collapse: collapse;
 	max-width: 520px;
-	max-height: 105px;
+	max-height: 106px;
 	overflow: auto;
 }
 
