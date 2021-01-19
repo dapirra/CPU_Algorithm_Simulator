@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<!--
+
+CPU Scheduler Simulator
+
+Name: David Pirraglia
+
+Professor: Sister Jane Fritz
+
+Class: COM 310
+
+-->
+<html>
+	<head>
+		<title>CPU Scheduler Simulator</title>
+
+		<meta charset="utf-8">
+
+		<!--Include Favicon-->
+		<link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABIElEQVR42sWTIUzEQBBFJ21O9LqyPqk6b8EneK8Ob88jqe7VdcVtkRg8EhIcXrc9CCSEUyAI/J38JssmkAoSNnlp8ud3ujt/K99WPaQgA0aaIcEzV5o+Uc3XtmMqP65mXIENsDAXeJ6DChSgZW31lw24bYjkBuxAByxwxFJz9NCPd/Vc6Ex2YC2/LDbZkEx0OPoFfmXbL0r3eHty9dyHeE3qcQHPReA3wmkXCs9+ev3ydv/w/hmyhoY6PfT7dDQmDIu4GQ26wL+cGlRkboOK5OK3wcL8I0z+ep9MQ2wJhjjkR5dPh7O7w0cItFdf4xBbYuIYHaMqcWWPI0qNOI4RhfgiuSCqjlhq0UXap///L0QN9L/IgGE6S5DrtKGBLN72F/2Ks0WcqDX6AAAAAElFTkSuQmCC"/>
+
+		<!--Include jQuery library-->
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+
+		<!--Include jQuery UI library and style sheet theme-->
+		<link rel="stylesheet" href="http://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+		<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+
+		<!--Include mousewheel functions for jQuery-->
+		<script src="https://jqueryui.com/resources/demos/external/jquery-mousewheel/jquery.mousewheel.js"></script>
+
+		<!--Include Project CSS and JS file-->
+		<link rel="stylesheet" href="CPU_Scheduler.css">
+		<script src="CPU_Scheduler.js"></script>
+	</head>
+	<body>
+		<h2 id="title">CPU Scheduler Simulator</h2>
+
+		<!--Input Options-->
+		<form>
+			<p>
+				<label for="processSpinner">Select the number of processes:</label>
+				<input id="processSpinner">
+			</p>
+			<p>
+				<label for="algorithm">Select a Scheduling Algorithm:</label>
+				<select id="algorithm">
+					<option value="1" selected>FCFS (First Come First Serve)</option>
+					<option value="2">SJF (Shortest Job First)</option>
+					<option value="3">RR (Round Robin)</option>
+					<option value="4">PRI (Priority Algorithm)</option>
+				</select>
+			</p>
+			<p>
+				<span id="quantum">
+					<label for="quantumSpinner">Quantum:</label>
+					<input id="quantumSpinner">
+				</span>
+			</p>
+			<p>
+				<button id="randomButton">Use Random Burst Times</button>
+				<button id="priorityButton">Use Random Priority Times</button>
+			</p>
+		</form>
+
+		<!--Table-->
+		<div id="div-resize">
+			<div id="div-input">
+				<div id="div-head">
+					<div>Process</div>
+					<div>Burst (ms)</div>
+					<div>Wait Time</div>
+					<div>Turnaround Time</div>
+					<div class="priority">Priority</div>
+				</div>
+				<div class="div-row" id="p1">
+					<div>P<span class="sub">1</span></div>
+					<div><input class="milliseconds" value="1"></div>
+					<div class="waittime">0</div>
+					<div class="turntime">1</div>
+					<div class="priority"><input class="priority-input" value="0"></div>
+				</div>
+			</div>
+		</div>
+
+		<p>Average Wait Time: <span id="avgwaittime">0</span></p>
+		<p>Average Turnaround Time: <span id="avgturntime">1</span></p>
+
+		<!--Gantt Chart-->
+		<h2 id="h2">Gantt Chart</h2>
+		<div id="gantt"></div>
+	</body>
+</html>
